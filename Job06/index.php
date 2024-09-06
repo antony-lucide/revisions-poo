@@ -1,13 +1,12 @@
 <?php
-class Product {
+class Category {
     public int $id;
     public string $name;
-    public array $photos;
-    public int $price;
     public string $description;
-    public int $quantity;
+    public string $category_id;
     public DateTime $createdAt;
     public DateTime $updatedAt;
+    public string $product;
 
     public function __construct($id = 0, $name = "", $photos = [], $price = 0, $description = "", $quantity = 0, $createdAt = null, $updatedAt = null) 
     {
@@ -19,9 +18,10 @@ class Product {
         $this->quantity = $quantity;
         $this->createdAt = $createdAt ?? new DateTime();
         $this->updatedAt = $updatedAt ?? new DateTime();
+        $this->Product = $product;
     }
 
-    public static function request($id) : ?Product
+    public static function request($id) : ?Category
     {
         $host = 'localhost';
         $db = 'draft-shop';
@@ -38,7 +38,6 @@ class Product {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
 
-            // Fetch the product with the provided ID
             $stmt = $pdo->prepare('SELECT * FROM product WHERE id = :id');
             $stmt->execute(['id' => $id]);
 
@@ -48,12 +47,10 @@ class Product {
                 return new Product(
                     $productData['id'],
                     $productData['name'],
-                    explode(',', $productData['photos']),
-                    $productData['price'],
                     $productData['description'],
-                    $productData['quantity'],
                     new DateTime($productData['createdAt']),
-                    new DateTime($productData['updatedAt'])
+                    new DateTime($productData['updatedAt']),
+                    $productData['category_id'];
                 );
             } else {
                 return null;
@@ -64,7 +61,12 @@ class Product {
         }
     }
 
-    
+    public function getProduct(): ?Product
+    {
+        return Product::request($this->product);
+    }
+
+
     public function getId(): int
     {
         return $this->id;
@@ -75,25 +77,12 @@ class Product {
         return $this->name;
     }
 
-    public function getPhotos(): array
-    {
-        return $this->photos;
-    }
-
-    public function getPrice(): int
-    {
-        return $this->price;
-    }
 
     public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function getQuantity(): int
-    {
-        return $this->quantity;
-    }
 
     public function getCreatedAt(): DateTime
     {
@@ -107,15 +96,12 @@ class Product {
 }
 
 // Fetch the product from the database
-$product = Product::request(1);
+$product = Category::request(1);
 
 if ($product !== null) {
     echo "Product ID : " . $product->getId() . "<br>";
     echo "Product name : " . $product->getName() . "<br>";
-    echo "Product photos : " . implode(", ", $product->getPhotos()) . "<br>";
-    echo "Product price : " . $product->getPrice() . "<br>";
     echo "Product description : " . $product->getDescription() . "<br>";
-    echo "Product quantity : " . $product->getQuantity() . "<br>";
     echo "Product created at : " . $product->getCreatedAt()->format('Y-m-d H:i:s') . "<br>";
     echo "Product updated at : " . $product->getUpdatedAt()->format('Y-m-d H:i:s') . "<br>";
 } else {
