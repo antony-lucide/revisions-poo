@@ -38,7 +38,6 @@ class Product {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
 
-            // Fetch the product with the provided ID
             $stmt = $pdo->prepare('SELECT * FROM product WHERE id = :id');
             $stmt->execute(['id' => $id]);
 
@@ -64,49 +63,43 @@ class Product {
         }
     }
 
-    
-    public function getId(): int
-    {
-        return $this->id;
-    }
 
-    public function getName(): string
+    public function findOneById(int $id)
     {
-        return $this->name;
-    }
+        
+        try {
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, 
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, 
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
 
-    public function getPhotos(): array
-    {
-        return $this->photos;
-    }
+            $stmt = $pdo->prepare('SELECT * FROM product WHERE id = :id');
+            $stmt->execute(['id' => $id]);
 
-    public function getPrice(): int
-    {
-        return $this->price;
-    }
+            $productData = $stmt->fetch();
 
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    public function getQuantity(): int
-    {
-        return $this->quantity;
-    }
-
-    public function getCreatedAt(): DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTime
-    {
-        return $this->updatedAt;
-    }
+            if ($productData) {
+                return new Product(
+                    $productData['id'],
+                    $productData['name'],
+                    explode(',', $productData['photos']),
+                    $productData['price'],
+                    $productData['description'],
+                    $productDa['taquantity'],
+                    new DateTime($productData['createdAt']),
+                    new DateTime($productData['updatedAt']),
+                    $productData['category_id']
+                );
+            } else {
+                return false; 
+            }
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+            return false;
+        }
+    }   
 }
-
-// Fetch the product from the database
 $product = Product::request(1);
 
 if ($product !== null) {
